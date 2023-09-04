@@ -1,0 +1,61 @@
+#Yüztanıma ve #duyguanalizi için veri seti ararken, dikkate almanız gereken bazı kaynaklar; 
+
+#Kaggle: Kaggle, veri bilimi projeleri için çeşitli veri setleri sunan bir platformdur. Yüz tanıma ve duygu analizi ile ilgili veri setlerini aramak için Kaggle'ı ziyaret edebilirsiniz.
+
+#EmoReact: EmoReact, duygu analizi için geniş bir veri seti sunan bir kaynaktır. Bu veri seti, insanların video içeriğini izlerken verdikleri duygusal tepkileri içerir.
+
+#Fer2013: Fer2013, duygu analizi için popüler bir veri setidir. İnsanların yüz ifadelerini yedi temel duygu kategorisine ayırır.
+
+#CK+ (Cohn-Kanade Database): CK+, yüz ifadesi verileri için bir kaynaktır. Bu veri seti, farklı yüz ifadelerini içeren görüntülerden oluşur.
+
+#IMDWikiFaceDatabase: Bu veri seti, büyük bir yüz veri tabanını içerir ve yaş tahmini ve cinsiyet tahmini gibi görevler için kullanılabilir.
+
+#Fer2013 ile duygu analizi
+!wget https://www.dropbox.com/s/3d49fadf9n2hcdx/fer2013.csv
+!unzip fer2013.csv.zip
+
+import pandas as pd
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+
+data = pd.read_csv("fer2013.csv")
+print(data.head())
+
+# Veriyi özellikler ve etiketler olarak ayırma
+X = []
+for pixel_sequence in data['pixels']:
+    face = [int(pixel) for pixel in pixel_sequence.split(' ')]
+    face = np.asarray(face).reshape(48, 48)  # 48x48 boyutunda resimlere çevirme
+    X.append(face.astype('float32'))
+
+X = np.asarray(X)
+X = np.expand_dims(X, -1)  # CNN için kanal boyutunu ekler
+
+y = pd.get_dummies(data['emotion'])  # Etiketleri one-hot encoding yapma
+
+# Eğitim ve test veri setlerini bölme
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
+
+model = keras.Sequential([
+    Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(48, 48, 1)),
+    Conv2D(64, kernel_size=(3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    Dropout(0.25),
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dropout(0.5),
+    Dense(7, activation='softmax')  # 7 duygu sınıfı
+])
+
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+history = model.fit(X_train, y_train, epochs=20, batch_size=64, validation_split=0.1, shuffle=True)
+y_pred = model.predict(X_test)
+y_pred = np.argmax(y_pred, axis=1)
+y_test = np.argmax(np.array(y_test), axis=1)
+
+print(classification_report(y_test, y_pred))
