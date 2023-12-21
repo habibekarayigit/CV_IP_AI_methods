@@ -1,0 +1,92 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from tensorflow.keras import layers, models
+from tensorflow.keras.utils import to_categorical
+
+import pandas as pd
+import numpy as np
+#https://github.com/ArminBaz/UTK-Face/blob/master/colab/TrainTridentMain.ipynb
+
+# Veri setini yükleyin
+data_path = '/content/drive/My Drive/age_gender.gz'
+
+# CSV dosyasını okuyun
+data = pd.read_csv(data_path, compression='gzip')
+
+# Görüntüleri ve etiketleri çıkartın
+# Görüntüleri ve etiketleri çıkartın
+# Görüntüleri ve etiketleri çıkartın
+images = np.empty((0, 48, 48, 1), dtype='float32')  # Boş bir numpy dizisi oluşturun
+labels = []
+data.head()
+
+for _, row in data.iterrows():
+    # 'pixels' sütunundaki verileri dönüştürün
+    pixels = np.fromstring(row['pixels'], dtype=int, sep=' ')
+    
+    # Görüntüyü uygun boyuta ve formata dönüştürün
+    image = pixels.reshape((48, 48, 1)).astype('float32') / 255.0
+    
+    # Cinsiyeti çıkartın
+    label = row['gender']
+
+    # Yeni örnekleri images ve labels dizilerine ekleyin
+    images = np.append(images, [image], axis=0)
+    labels.append(label)
+
+# Cinsiyet etiketlerini NumPy dizisine dönüştürün
+labels = np.array(labels)
+
+
+# Cinsiyet etiketlerini kategorik formata dönüştürün
+labels = to_categorical(labels, num_classes=2)
+
+# Eğitim ve test setlerini oluşturun
+X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, random_state=42)
+
+# Modeli oluşturun
+model = models.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(48, 48, 1)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Flatten(),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(2, activation='softmax')  # İki sınıf için softmax aktivasyon kullanıyoruz
+])
+
+# Modeli derleyin
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Modeli eğitin
+model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+
+# Modeli değerlendirin
+accuracy = model.evaluate(X_test, y_test)
+print(f'Test Accuracy: {accuracy[1]*100:.2f}%')
+
+# Test veri setindeki örnekler üzerinde tahminler yapın
+predictions = model.predict(X_test)
+
+# Tahminleri sayısal değerlere dönüştürün
+rounded_predictions = np.argmax(predictions, axis=1)
+
+# Gerçek etiketlerle karşılaştırın
+correct_predictions = (rounded_predictions == np.argmax(y_test, axis=1))
+
+# Doğru tahminlerin oranını hesaplayın
+accuracy = np.sum(correct_predictions) / len(correct_predictions)
+print(f'Test Set Accuracy: {accuracy*100:.2f}%')
+
+# Örnek bir tahmin yapın
+sample_index = 0
+sample_image = X_test[sample_index]
+sample_label = np.argmax(y_test[sample_index])
+sample_prediction = rounded_predictions[sample_index]
+
+# Tahminin doğruluğunu kontrol edin
+if sample_prediction == sample_label:
+    print('Örnek Tahmin: Doğru')
+else:
+    print('Örnek Tahmin: Yanlış')
+
