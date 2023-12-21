@@ -1,6 +1,8 @@
-# CV_IP_AI_methods
+# Computer_Vision-Image_Processing-Projects
+
 Computer Vision and Image Processing Projects with AI methods
-Merhaba bu repoda Bilgisayarlı Görü ve Görüntü İşleme alanında yapılabilecek projelerin açıklamalarına ve kodlarına yer vereceğim.
+
+Hello, in this repo I will include descriptions and codes of projects that can be done in the field of Computer Vision and Image Processing.
 
 Yapay zeka algoritmalarını kullanarak bilgisayarlı görü ve görüntü işleme alanında 25 proje örnekleri aşağıdadır.
 
