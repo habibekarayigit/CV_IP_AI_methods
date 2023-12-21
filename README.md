@@ -6,5 +6,5 @@ Hello, in this repo I will include descriptions and codes of projects that can b
 
 1. **Object Detection and Recognition with CamVid (Traffic example)**
 
-
+2. **Facial Recognition and Emotion Analysis**
 
