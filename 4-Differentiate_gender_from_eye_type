@@ -8,6 +8,7 @@ from tensorflow.keras.utils import to_categorical
 import pandas as pd
 import numpy as np
 #https://github.com/ArminBaz/UTK-Face/blob/master/colab/TrainTridentMain.ipynb
+#dataseti burdan indirebilirsiniz
 
 # Veri setini yükleyin
 data_path = '/content/drive/My Drive/age_gender.gz'
